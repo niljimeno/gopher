@@ -5,7 +5,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/niljimeno/gopher/tcp"
-	"github.com/niljimeno/gopher/types"
 )
 
 type program_ struct {
@@ -13,13 +12,6 @@ type program_ struct {
 	Buffers []buffer
 	State   state
 }
-
-type buffer []tcp.Message
-
-var emptyBuffer = buffer{{
-	Type:    types.Information,
-	Content: "Empty buffer",
-}}
 
 func (p *program_) mainLoop() {
 	switch ev := p.Screen.PollEvent().(type) {
@@ -41,17 +33,33 @@ func (p *program_) HandleInput(ev *tcell.EventKey) {
 	switch ev.Rune() {
 	case 'q':
 		p.Quit()
+	case 'k':
+		p.Buffer().moveCursor(-1)
+		p.RefreshScreen()
+	case 'j':
+		p.Buffer().moveCursor(+1)
+		p.RefreshScreen()
 	}
+}
+
+func (p *program_) RefreshScreen() {
+	p.Screen.PostEvent(&tcell.EventResize{})
 }
 
 func (p *program_) Buffer() *buffer {
 	return &p.Buffers[p.State.BufferIndex]
 }
 
-func (p *program_) CreateBuffer(b buffer) {
-	p.Buffers = append(p.Buffers, b)
+func (p *program_) CreateBuffer(m []tcp.Message) {
+	p.Buffers = append(p.Buffers, buffer{
+		Content: m,
+	})
 	p.State.BufferIndex = len(p.Buffers) - 1
 	p.Screen.PostEvent(&tcell.EventResize{})
+}
+
+func (p *program_) CreateEmptyBuffer() {
+	p.CreateBuffer([]tcp.Message{{Content: "Empty buffer"}})
 }
 
 func (p *program_) KillBuffer() {
@@ -60,7 +68,7 @@ func (p *program_) KillBuffer() {
 	p.State.BufferIndex--
 
 	if p.State.BufferIndex <= 0 {
-		p.CreateBuffer(emptyBuffer)
+		p.CreateEmptyBuffer()
 	}
 	p.Screen.PostEvent(&tcell.EventResize{})
 }

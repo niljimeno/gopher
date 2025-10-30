@@ -1,47 +1,91 @@
 package browser
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
+	"github.com/niljimeno/gopher/tcp"
+	"github.com/niljimeno/gopher/types"
 )
+
+var alternateStyle = tcell.StyleDefault.
+	Background(tcell.ColorWhite).
+	Foreground(tcell.ColorBlack)
 
 func (p program_) ShowScreen() {
 	w, h := p.Screen.Size()
 	p.Screen.Clear()
-
 	switch p.State.Mode {
 	case LOADING:
-		loadingText := "Loading..."
-		emitStr(
-			p.Screen,
-			(w-len(loadingText))/2, h/2-1,
-			tcell.StyleDefault,
-			loadingText,
-		)
-
+		p.ShowLoadingScreen(w, h)
 	case READING:
-		var row int
+		p.ShowPage(w, h)
+		p.Screen.Show()
+	}
+}
 
-		for _, v := range *p.Buffer() {
-			if row >= h {
-				break
-			}
+func (p program_) ShowLoadingScreen(w, h int) {
+	printCentered(p.Screen, "Loading...", w, h)
+}
 
-			if len(v.Content) <= w {
-				emitStr(p.Screen, 0, row, tcell.StyleDefault, v.Content)
-				row++
-				continue
-			}
+func printCentered(s tcell.Screen, text string, w, h int) {
+	emitStr(
+		s,
+		(w-len(text))/2, h/2-1,
+		tcell.StyleDefault,
+		text)
+}
 
-			chop := splitEvery(v.Content, w)
-			for _, c := range chop {
-				emitStr(p.Screen, 0, row, tcell.StyleDefault, c)
-				row++
-			}
-		}
+func (p *program_) ShowPage(w, h int) {
+	b := p.Buffer()
+
+	var ptr = new(int)
+	*ptr = -1
+
+	if b.Cursor.Line < b.Scroll {
+		b.Scroll = b.Cursor.Line
+	} else if b.Cursor.Line > b.Scroll+h {
+		b.Scroll = b.Cursor.Line + h - 1
 	}
 
-	p.Screen.Show()
+	start := b.Scroll
+
+	for i, v := range b.Content[start:] {
+		text := formattedMessage(v)
+
+		var style tcell.Style
+		if i == b.Cursor.Line {
+			style = alternateStyle
+		} else {
+			style = tcell.StyleDefault
+		}
+
+		printMessage(p.Screen, style, ptr, text, w)
+	}
+}
+
+func printMessage(s tcell.Screen, style tcell.Style, ptr *int, text string, maxWidth int) {
+	*ptr++
+	if len(text) <= maxWidth {
+		spacing := strings.Repeat(" ", maxWidth-len(text))
+		emitStr(s, 0, *ptr, style, text+spacing)
+	} else {
+		emitStr(s, 0, *ptr, style, text[:maxWidth])
+		printMessage(s, style, ptr, text[maxWidth:], maxWidth)
+	}
+
+}
+
+func formattedMessage(m tcp.Message) string {
+	switch m.Type {
+	default:
+		return "[?]" + m.Content
+	case types.Information:
+		return m.Content
+	case types.SubMenu:
+		return "[Submenu] " + m.Content
+	}
 }
 
 func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
@@ -56,13 +100,4 @@ func emitStr(s tcell.Screen, x, y int, style tcell.Style, str string) {
 		s.SetContent(x, y, c, comb, style)
 		x += w
 	}
-}
-
-func splitEvery(s string, n int) []string {
-	var result []string
-	for i := 0; i < len(s); i += n {
-		end := min(i+n, len(s))
-		result = append(result, s[i:end])
-	}
-	return result
 }

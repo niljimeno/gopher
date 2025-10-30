@@ -35,8 +35,5 @@ func newProgram() (program_, error) {
 		Foreground(tcell.ColorWhite)
 	program.Screen.SetStyle(defStyle)
 
-	program.Buffers = []buffer{emptyBuffer}
-	program.State.Mode = LOADING
-
 	return program, nil
 }

@@ -1,7 +1,7 @@
 package browser
 
+const READING = 0
 const LOADING = 1
-const READING = 2
 
 type state struct {
 	Mode        uint8
