@@ -23,22 +23,31 @@ func (p *program_) mainLoop() {
 }
 
 func (p *program_) HandleInput(ev *tcell.EventKey) {
-	switch ev.Key() {
+	key := ev.Key()
+	rune := ev.Rune()
+
+	switch key {
 	case tcell.KeyEscape:
 		p.Quit()
-	case tcell.KeyCtrlK:
-		p.KillBuffer()
 	}
 
-	switch ev.Rune() {
-	case 'q':
-		p.Quit()
-	case 'k':
-		p.Buffer().moveCursor(-1)
-		p.RefreshScreen()
-	case 'j':
-		p.Buffer().moveCursor(+1)
-		p.RefreshScreen()
+	switch p.State.Mode {
+	case READING:
+		switch rune {
+		case 'q':
+			p.Quit()
+		case 'k':
+			p.Buffer().moveCursor(-1)
+			p.RefreshScreen()
+		case 'j':
+			p.Buffer().moveCursor(+1)
+			p.RefreshScreen()
+		}
+
+		switch key {
+		case tcell.KeyCtrlK:
+			p.KillBuffer()
+		}
 	}
 }
 

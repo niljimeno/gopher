@@ -10,7 +10,8 @@ import (
 )
 
 func Dial(url, route string) []Message {
-	return labrat()
+	// Uncomment for testing:
+	// return labrat()
 
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
@@ -34,6 +35,7 @@ func Dial(url, route string) []Message {
 	return messages
 }
 
+// testing
 func labrat() []Message {
 	time.Sleep(time.Second * 0)
 

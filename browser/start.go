@@ -18,7 +18,11 @@ func Start() error {
 }
 
 func newProgram() (program_, error) {
-	program := program_{}
+	program := program_{
+		State: state{
+			Mode: LOADING,
+		},
+	}
 
 	var err error
 	program.Screen, err = tcell.NewScreen()

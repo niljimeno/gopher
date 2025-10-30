@@ -21,8 +21,9 @@ func (p program_) ShowScreen() {
 		p.ShowLoadingScreen(w, h)
 	case READING:
 		p.ShowPage(w, h)
-		p.Screen.Show()
 	}
+
+	p.Screen.Show()
 }
 
 func (p program_) ShowLoadingScreen(w, h int) {
@@ -43,10 +44,13 @@ func (p *program_) ShowPage(w, h int) {
 	var ptr = new(int)
 	*ptr = -1
 
-	if b.Cursor.Line < b.Scroll {
-		b.Scroll = b.Cursor.Line
-	} else if b.Cursor.Line > b.Scroll+h {
-		b.Scroll = b.Cursor.Line + h - 1
+	if b.Cursor.Line < b.Scroll+5 {
+		b.Scroll = b.Cursor.Line - 5
+		if b.Scroll < 0 {
+			b.Scroll = 0
+		}
+	} else if b.Cursor.Line >= b.Scroll+h-5 {
+		b.Scroll = b.Cursor.Line - h + 5
 	}
 
 	start := b.Scroll
@@ -55,7 +59,7 @@ func (p *program_) ShowPage(w, h int) {
 		text := formattedMessage(v)
 
 		var style tcell.Style
-		if i == b.Cursor.Line {
+		if start+i == b.Cursor.Line {
 			style = alternateStyle
 		} else {
 			style = tcell.StyleDefault
@@ -71,10 +75,16 @@ func printMessage(s tcell.Screen, style tcell.Style, ptr *int, text string, maxW
 		spacing := strings.Repeat(" ", maxWidth-len(text))
 		emitStr(s, 0, *ptr, style, text+spacing)
 	} else {
-		emitStr(s, 0, *ptr, style, text[:maxWidth])
-		printMessage(s, style, ptr, text[maxWidth:], maxWidth)
+		emitStr(s, 0, *ptr, style, text)
 	}
 
+	//if len(text) <= maxWidth {
+	//	spacing := strings.Repeat(" ", maxWidth-len(text))
+	//	emitStr(s, 0, *ptr, style, text+spacing)
+	//} else {
+	//	emitStr(s, 0, *ptr, style, text[:maxWidth])
+	//	printMessage(s, style, ptr, text[maxWidth:], maxWidth)
+	//}
 }
 
 func formattedMessage(m tcp.Message) string {

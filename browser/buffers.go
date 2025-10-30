@@ -17,7 +17,7 @@ type cursor struct {
 func (b *buffer) moveCursor(step int) {
 	prev := b.Cursor.Line
 	b.Cursor.Line += step
-	if 0 > b.Cursor.Line || b.Cursor.Line > len(b.Content) {
+	if 0 > b.Cursor.Line || b.Cursor.Line > len(b.Content)-1 {
 		b.Cursor.Line = prev
 	}
 }
