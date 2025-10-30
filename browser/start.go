@@ -1,11 +1,24 @@
-package ui
+package browser
 
 import (
 	"github.com/gdamore/tcell/v2"
 )
 
+func Start() error {
+	program, err := newProgram()
+	if err != nil {
+		return err
+	}
+
+	program.LoadPage("gopher.meulie.net:70", "")
+
+	for {
+		program.mainLoop()
+	}
+}
+
 func newProgram() (program_, error) {
-	program := program_{Chan: make(chan string)}
+	program := program_{}
 
 	var err error
 	program.Screen, err = tcell.NewScreen()
@@ -22,18 +35,8 @@ func newProgram() (program_, error) {
 		Foreground(tcell.ColorWhite)
 	program.Screen.SetStyle(defStyle)
 
+	program.Buffers = []buffer{emptyBuffer}
+	program.State.Mode = LOADING
+
 	return program, nil
-}
-
-func Start() error {
-	program, err := newProgram()
-	if err != nil {
-		return err
-	}
-
-	program.LoadPage("gopher.quux.org:70", "")
-
-	for {
-		program.mainLoop()
-	}
 }

@@ -6,10 +6,11 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 func Dial(url, route string) []Message {
-	return labrat()
+	// return labrat()
 
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
@@ -34,6 +35,8 @@ func Dial(url, route string) []Message {
 }
 
 func labrat() []Message {
+	time.Sleep(time.Second)
+
 	rat, err := os.OpenFile("example", os.O_RDONLY, 0440)
 	if err != nil {
 		return nil
