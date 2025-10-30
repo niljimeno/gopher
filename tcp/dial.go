@@ -1,13 +1,16 @@
-package main
+package tcp
 
 import (
 	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"os"
 )
 
 func Dial(url, route string) []Message {
+	return labrat()
+
 	conn, err := net.Dial("tcp", url)
 	if err != nil {
 		log.Fatal(err)
@@ -23,9 +26,28 @@ func Dial(url, route string) []Message {
 	}
 
 	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		return nil
 	}
 
 	conn.Close()
+	return messages
+}
+
+func labrat() []Message {
+	rat, err := os.OpenFile("example", os.O_RDONLY, 0440)
+	if err != nil {
+		return nil
+	}
+
+	scanner := bufio.NewScanner(rat)
+	var messages []Message
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		messages = append(messages, Serialize(scanner.Text()))
+	}
+	if err := scanner.Err(); err != nil {
+		return nil
+	}
+
 	return messages
 }

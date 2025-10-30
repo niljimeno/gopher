@@ -26,6 +26,7 @@ const (
 	SoundAlt    = 's'
 	PDFFile     = 'P'
 	XMLFile     = 'X'
+	End         = '.'
 )
 
 /*

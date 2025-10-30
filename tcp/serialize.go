@@ -1,4 +1,4 @@
-package main
+package tcp
 
 import (
 	"fmt"
@@ -23,7 +23,12 @@ var malformedMessage Message = Message{
 func Serialize(m string) Message {
 	messageParts := strings.Split(tail(m), "\t")
 	if len(messageParts) < 4 {
-		return malformedMessage
+		switch m[0] {
+		default:
+			return malformedMessage
+		case '.':
+			return Message{Type: m[0]}
+		}
 	}
 
 	port, err := strconv.Atoi(messageParts[3])
