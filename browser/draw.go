@@ -9,9 +9,7 @@ import (
 	"github.com/niljimeno/gopher/types"
 )
 
-var alternateStyle = tcell.StyleDefault.
-	Background(tcell.ColorWhite).
-	Foreground(tcell.ColorBlack)
+var alternateStyle = tcell.StyleDefault.Reverse(true)
 
 func (p program_) ShowScreen() {
 	w, h := p.Screen.Size()

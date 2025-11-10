@@ -34,9 +34,7 @@ func newProgram() (program_, error) {
 		return program_{}, err
 	}
 
-	defStyle := tcell.StyleDefault.
-		Background(tcell.ColorBlack).
-		Foreground(tcell.ColorWhite)
+	defStyle := tcell.StyleDefault
 	program.Screen.SetStyle(defStyle)
 
 	return program, nil
